@@ -49,6 +49,12 @@ defmodule Sentinels do
     |> handle_changeset()
   end
 
+  def validate(sentinel, struct, data) when is_atom(sentinel) do
+    struct
+    |> sentinel.changeset(data)
+    |> handle_changeset()
+  end
+
   defp handle_changeset(changeset) do
     case Changeset.apply_action(changeset, :validate) do
       {:ok, result} -> {:ok, Utils.struct_to_map(result)}

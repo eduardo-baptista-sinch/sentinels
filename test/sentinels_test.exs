@@ -65,4 +65,51 @@ defmodule SentinelsTest do
       assert result == expected_result
     end
   end
+
+  describe "validate/3" do
+    defmodule SentinelImpl do
+      @moduledoc false
+
+      use Sentinel
+
+      embedded_schema do
+        field(:name, :string)
+        field(:age, :integer)
+      end
+    end
+
+    test "returns update map when validate successfully" do
+      params = %{name: "new name"}
+      struct = %SentinelImpl{name: "name", age: 25}
+
+      result = Sentinels.validate(SentinelImpl, struct, params)
+
+      expected_result = {:ok, %{name: "new name", age: 25}}
+      assert result == expected_result
+    end
+
+    test "returns error when validation fails" do
+      params = %{age: "invalid"}
+      struct = %SentinelImpl{name: "name", age: 25}
+
+      result = Sentinels.validate(SentinelImpl, struct, params)
+
+      expected_result = {
+        :error,
+        %Error{content: %{age: ["is invalid"]}}
+      }
+
+      assert result == expected_result
+    end
+
+    test "return ok when has no update to apply" do
+      params = %{}
+      struct = %SentinelImpl{name: "name", age: 25}
+
+      result = Sentinels.validate(SentinelImpl, struct, params)
+
+      expected_result = {:ok, %{name: "name", age: 25}}
+      assert result == expected_result
+    end
+  end
 end
